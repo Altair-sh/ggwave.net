@@ -34,7 +34,11 @@ jobs:
         # TODO: add osx
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout current commit
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+        submodules: true
 
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
