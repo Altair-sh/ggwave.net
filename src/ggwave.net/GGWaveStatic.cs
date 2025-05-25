@@ -1,9 +1,15 @@
-﻿using ggwave.net.Native;
+﻿using System;
+using ggwave.net.Native;
 
 namespace ggwave.net;
 
 public static class GGWaveStatic
 {
+    public static void disableStdoutLog()
+    {
+        Functions.ggwave_setLogFile(IntPtr.Zero);
+    }
+    
     public static GGWaveParameters getDefaultParameters() => Functions.ggwave_getDefaultParameters();
     
     public static void rxToggleProtocol(GGWaveProtocolId protocolId, int state) => 

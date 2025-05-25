@@ -1,5 +1,6 @@
 ﻿using System;
-using System.Runtime.InteropServices;
+using System.Buffers;
+using System.IO;
 using ggwave.net.Native;
 using static ggwave.net.Native.Functions;
 
@@ -30,49 +31,144 @@ public class GGWaveInstance : IDisposable
         _instance = 0;
     }
 
+    //TODO: find out what is rxDurationFrames
     public int rxDurationFrames() => ggwave_rxDurationFrames(_instance);
 
-    public unsafe byte[] encode(byte[] payload, GGWaveProtocolId protocolId, int volumePercent)
+    /// calculate the length of waveform output buffer
+    private int CalculateEncodedSize(IntPtr pPayload, int payloadLength,
+        GGWaveProtocolId protocolId, int volumePercent)
     {
+        int n = ggwave_encode(_instance,
+            pPayload, payloadLength,
+            protocolId, volumePercent,
+            IntPtr.Zero, 1);
+        if (n < 0)
+            throw new Exception("Could not calculate Waveform size");
+        return n;
+    }
+    
+
+    /// generate the waveform
+    private int Encode(IntPtr pPayload, int payloadLength,
+        GGWaveProtocolId protocolId, int volumePercent, IntPtr pWaveform)
+    {
+        int n = ggwave_encode(_instance,
+            pPayload, payloadLength,
+            protocolId, volumePercent,
+            pWaveform, 0);
+        if (n < 0)
+            throw new Exception("Could not encode Waveform");
+        return n;
+    }
+    
+    public unsafe byte[] Encode(byte[] payload, GGWaveProtocolId protocolId, int volumePercent)
+    {
+        if (payload.Length == 0)
+            return [];
+        
         fixed (byte* pPayload = payload)
         {
-            //query the number of bytes in the waveform
-            int n = ggwave_encode(_instance,
-                (IntPtr)pPayload, payload.Length,
-                protocolId, volumePercent,
-                IntPtr.Zero, 1);
-            // allocate the output buffer
+            int n = CalculateEncodedSize((IntPtr)pPayload, payload.Length,
+                protocolId, volumePercent);
             byte[] waveform = new byte[n];
             fixed (byte* pWaveform = waveform)
             {
-                // generate the waveform
-                ggwave_encode(_instance,
-                    (IntPtr)pPayload, payload.Length,
+                n = Encode((IntPtr)pPayload, payload.Length,
                     protocolId, volumePercent,
-                    (IntPtr)pWaveform, 0);
+                    (IntPtr)pWaveform);
+                if (n != waveform.Length)
+                    throw new Exception($"encoded {n} out of {waveform.Length} calculated Waveform size");
             }
-
             return waveform;
         }
     }
 
-    public unsafe byte[] decode(byte[] waveform)
+    private int Decode(IntPtr pWaveform, int waveformLength, IntPtr pPayload, int payloadLength)
+    {
+       int n = ggwave_ndecode(_instance,
+            pWaveform, waveformLength,
+            pPayload, payloadLength);
+       if (n == -2)
+           throw new Exception($"Payload buffer is too small ({payloadLength} bytes)");
+       if (n < 0)
+           throw new Exception("Could not decode Waveform");
+       return n;
+    } 
+    
+    public unsafe int Decode(byte[] waveform, byte[] payload)
     {
         fixed (byte* pWaveform = waveform)
         {
-            byte[] payload = new byte[256];
             fixed (byte* pPayload = payload)
             {
-                int n = ggwave_ndecode(_instance,
-                    (IntPtr)pWaveform, waveform.Length,
+                int n = Decode((IntPtr)pWaveform, waveform.Length, 
                     (IntPtr)pPayload, payload.Length);
-                if (n == -1)
-                    throw new Exception("Could not decode Waveform");
-                if (n == -2)
-                    throw new Exception($"Payload buffer is too small ({payload.Length} bytes)");
+                return n;
             }
+        }
+    }
 
-            return payload;
+    public unsafe void EncodeStream(Stream input, Stream output, 
+        GGWaveProtocolId protocolId, int volumePercent, int inputBufferSize = 8192)
+    {
+        byte[] inputBuffer = ArrayPool<byte>.Shared.Rent(inputBufferSize);
+        try
+        {
+            fixed (byte* pPayload = inputBuffer)
+            {
+                int readN;
+                while ((readN = input.Read(inputBuffer, 0, inputBufferSize)) != 0)
+                {
+                    int outputBufferSize = CalculateEncodedSize((IntPtr)pPayload, readN,
+                        protocolId, volumePercent);
+                    byte[] outputBuffer = ArrayPool<byte>.Shared.Rent(outputBufferSize);
+                    try
+                    {
+                        fixed (byte* pWaveform = outputBuffer)
+                        {
+                            int encN = Encode((IntPtr)pPayload, readN,
+                                protocolId, volumePercent,
+                                (IntPtr)pWaveform);
+                            output.Write(outputBuffer, 0, encN);
+                        }
+                    }
+                    finally
+                    {
+                        ArrayPool<byte>.Shared.Return(outputBuffer);
+                    }
+                }
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(inputBuffer);
+        }
+    }
+    
+    public unsafe void DecodeStream(Stream input, Stream output, int inputBufferSize = 8192)
+    {
+        byte[] inputBuffer = ArrayPool<byte>.Shared.Rent(inputBufferSize);
+        byte[] outputBuffer = ArrayPool<byte>.Shared.Rent(inputBufferSize);
+        try
+        {
+            fixed (byte* pWaveform = inputBuffer)
+            {
+                fixed (byte* pPayload = outputBuffer)
+                {
+                    int readN;
+                    while ((readN = input.Read(inputBuffer, 0, inputBufferSize)) != 0)
+                    {
+                        int decN = Decode((IntPtr)pWaveform, readN, 
+                            (IntPtr)pPayload, outputBuffer.Length);
+                        output.Write(outputBuffer, 0, decN);
+                    }
+                }
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(outputBuffer);
+            ArrayPool<byte>.Shared.Return(inputBuffer);
         }
     }
 }
