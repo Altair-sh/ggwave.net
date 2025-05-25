@@ -11,7 +11,7 @@ git clone --recursive --depth 1 REPOSITORY_URL
 ### Install tools and dependencies
 1. gcc or clang
 2. cmake
-3. make
+3. make or ninja
 
 
 ### Build ggwave
@@ -44,15 +44,22 @@ cmake .. -DCMAKE_BUILD_TYPE=Release\
 ```
 
 Build with make if your cmake produced ./Makefile
-```
+```sh
 make
 ```
 
 or with ninja if cmake created ./ninja.build
-```
+```sh
 ninja
 ```
 
 Hooray! look at your `bin/libggwave.*`
 
+### Copy shared libraries to C# project
+Copy *.so or *.dll to `src/ggwave.net/runtimes/<platform-dir>/native` where `platform-dir` is `win-x64` or whatever (see [documentation](https://learn.microsoft.com/en-us/dotnet/core/rid-catalog#known-rids))
 
+
+### Create nuget package
+```sh
+dotnet pack src/ggwave.net/ggwave.net.csproj -o nuget
+```
