@@ -18,25 +18,26 @@ jobs:
       with:
         fetch-depth: 1
         submodules: false
-        
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
       
     - name: Download native libraries
       uses: dawidd6/action-download-artifact@v9
       with:
-        name: natives-*
+        name: natives-Linux
         path: src/ggwave.net/runtimes/
         # put all artifact files in runtimes/
         merge_multiple: true
         branch: ${{ github.head_ref || github.ref_name }}
         workflow_search: true
+        check_artifacts: true
         github_token:  ${{ secrets.GITHUB_TOKEN }}
         
     - name: Native libraries list
       run: tree src/ggwave.net/runtimes/
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
       
     - name: Restore dependencies
       run: dotnet restore
