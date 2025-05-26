@@ -44,10 +44,11 @@ jobs:
         echo "CMAKE_POLICY_VERSION_MINIMUM=3.5" >> $GITHUB_ENV
       
     - name: Configure CMake
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: >
         cmake
-        -S ${{ steps.strings.outputs.cmake-source-dir  }}
-        -B ${{ steps.strings.outputs.build-output-dir }}
+        -S ${{ steps.strings.outputs.cmake-source-dir }}
+        -B .
         -G "Ninja"
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
@@ -55,6 +56,9 @@ jobs:
         -DGGWAVE_BUILD_EXAMPLES=OFF
         -DBUILD_SHARED_LIBS=ON
         -DGGWAVE_BUILD_TESTS=ON
+        -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=bin
+        -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=bin
+        -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=bin
 
     - name: Build
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
