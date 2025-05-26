@@ -22,7 +22,7 @@ jobs:
     - name: Download native libraries
       uses: dawidd6/action-download-artifact@v9
       with:
-        name: natives-Linux
+        name: natives-*
         path: src/ggwave.net/runtimes/
         # put all artifact files in runtimes/
         merge_multiple: true
@@ -40,7 +40,7 @@ jobs:
         dotnet-version: 8.0.x
       
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore src/ggwave.net/ggwave.net.sln
     - name: Build
       run: dotnet pack src/ggwave.net/ggwave.net.csproj -o nuget -c Release
       
