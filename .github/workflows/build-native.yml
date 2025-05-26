@@ -42,7 +42,7 @@ jobs:
         echo "git-submodule-sha=$(git submodule status ggwave | awk '{print $1}')" >> "$GITHUB_OUTPUT"
         echo "cmake-source-dir=${{ github.workspace }}/ggwave" >> "$GITHUB_OUTPUT"
         echo "build-working-dir=${{ github.workspace }}/ggwave/build" >> "$GITHUB_OUTPUT"
-        echo "build-bin-dir=${{ github.workspace }}/ggwave/build/bin" >> "$GITHUB_OUTPUT"
+        echo "build-bin-dir=${{ github.workspace }}/ggwave/build/bin/x64/native" >> "$GITHUB_OUTPUT"
         echo "CMAKE_POLICY_VERSION_MINIMUM=3.5" >> $GITHUB_ENV
      
     - name: Set OS-specific variables
@@ -93,6 +93,6 @@ jobs:
         # name: natives-${{ steps.vars.outputs.git-submodule-sha }}-${{ runner.os }}
         name: natives-${{ runner.os }}
         path: |
-          ${{ steps.vars.outputs.build-bin-dir }}/*.so
-          ${{ steps.vars.outputs.build-bin-dir }}/*.dll
-          ${{ steps.vars.outputs.build-bin-dir }}/*.dylib
+          ${{ steps.vars.outputs.build-bin-dir }}/**/*.so
+          ${{ steps.vars.outputs.build-bin-dir }}/**/*.dll
+          ${{ steps.vars.outputs.build-bin-dir }}/**/*.dylib
