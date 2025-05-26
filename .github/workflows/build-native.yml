@@ -40,14 +40,15 @@ jobs:
       shell: bash
       run: |
         echo "cmake-source-dir=${{ github.workspace }}/ggwave" >> "$GITHUB_OUTPUT"
-        echo "build-output-dir=${{ github.workspace }}/ggwave/build" >> "$GITHUB_OUTPUT"
+        echo "build-working-dir=${{ github.workspace }}/ggwave/build" >> "$GITHUB_OUTPUT"
+        echo "build-bin-dir=${{ github.workspace }}/ggwave/build/bin" >> "$GITHUB_OUTPUT"
         echo "CMAKE_POLICY_VERSION_MINIMUM=3.5" >> $GITHUB_ENV
       
     - name: Configure CMake
       run: >
         cmake
-        -S ${{ steps.strings.outputs.cmake-source-dir }}
-        -B ${{ steps.strings.outputs.build-output-dir }}
+        -S 
+        -B ${{ steps.strings.outputs.build-working-dir }}
         -G "Ninja"
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
@@ -55,29 +56,30 @@ jobs:
         -DGGWAVE_BUILD_EXAMPLES=OFF
         -DBUILD_SHARED_LIBS=ON
         -DGGWAVE_BUILD_TESTS=ON
-        -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=bin
-        -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=bin
-        -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=bin
+        -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${{ steps.strings.outputs.build-bin-dir }}
+        -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=${{ steps.strings.outputs.build-bin-dir }}
+        -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=${{ steps.strings.outputs.build-bin-dir }}
 
     - name: Build
-      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      working-directory: ${{ steps.strings.outputs.build-working-dir }}
       run: cmake --build . --config ${{ matrix.build_type }}
 
     - name: Test
-      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      working-directory: ${{ steps.strings.outputs.build-working-dir }}
       run: ctest --build-config ${{ matrix.build_type }}
 
-    - name: find artifacts
+    - name: Find build artifacts
       shell: bash
       run: |
         find -name '*.so'
         find -name '*.dll'
+        find -name '*.dylib'
     
     - name: Upload native build artifacts
       uses: actions/upload-artifact@v4
       with:
         name: native-libraries
         path: |
-          ${{ steps.strings.outputs.build-output-dir }}/bin/*.so
-          ${{ steps.strings.outputs.build-output-dir }}/bin/*.dll
-          ${{ steps.strings.outputs.build-output-dir }}/bin/*.dylib
+          ${{ steps.strings.outputs.build-bin-dir }}/*.so
+          ${{ steps.strings.outputs.build-bin-dir }}/*.dll
+          ${{ steps.strings.outputs.build-bin-dir }}/*.dylib
