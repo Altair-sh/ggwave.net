@@ -26,13 +26,13 @@ jobs:
       - name: Save old submodule status
         run: |
           git checkout ${{ steps.prev.outputs.sha }}
-          git submodule status libs/my-submodule > ../old.txt
+          git submodule status ggwave > ../old.txt
 
       - name: Save new submodule status
         run: |
           git checkout ${{ github.sha }}
           git submodule update --init --recursive --depth 2
-          git submodule status libs/my-submodule > ../new.txt
+          git submodule status ggwave > ../new.txt
 
       - name: Compare submodule reference
         id: compare
