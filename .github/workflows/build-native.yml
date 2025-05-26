@@ -49,22 +49,26 @@ jobs:
       run: |
         echo "cmake-source-dir=./ggwave" >> "$GITHUB_OUTPUT"
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+        echo "CMAKE_POLICY_VERSION_MINIMUM=3.5" >> $GITHUB_ENV
 
+    - name: Test env variable
+      run: |
+        echo "$CMAKE_POLICY_VERSION_MINIMUM"
+      
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-
-      run: |
-        export CMAKE_POLICY_VERSION_MINIMUM=3.5
+ 
+      run: >
         cmake \
-          -S ${{ steps.strings.outputs.cmake-source-dir  }}\
-          -B ${{ steps.strings.outputs.build-output-dir }}\
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}\
-          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}\
-          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}\
-          -DGGWAVE_BUILD_EXAMPLES=OFF\
-          -DBUILD_SHARED_LIBS=ON\
-          -DGGWAVE_BUILD_TESTS=ON\
+          -S ${{ steps.strings.outputs.cmake-source-dir  }}
+          -B ${{ steps.strings.outputs.build-output-dir }}
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+          -DGGWAVE_BUILD_EXAMPLES=OFF
+          -DBUILD_SHARED_LIBS=ON
+          -DGGWAVE_BUILD_TESTS=ON
 
     - name: Build
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
@@ -81,6 +85,6 @@ jobs:
       with:
         name: native-libraries
         path: |
-          ${{ steps.strings.outputs.build-output-dir }}/bin/**/*.so
-          ${{ steps.strings.outputs.build-output-dir }}/bin/**/*.dll
-          ${{ steps.strings.outputs.build-output-dir }}/bin/**/*.dylib
+          ${{ steps.strings.outputs.build-output-dir }}/bin/*.so
+          ${{ steps.strings.outputs.build-output-dir }}/bin/*.dll
+          ${{ steps.strings.outputs.build-output-dir }}/bin/*.dylib
