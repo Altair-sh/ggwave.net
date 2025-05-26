@@ -40,7 +40,7 @@ jobs:
       shell: bash
       run: |
         echo "cmake-source-dir=./ggwave" >> "$GITHUB_OUTPUT"
-        echo "build-output-dir=${{ steps.strings.outputs.cmake-source-dir }}/build" >> "$GITHUB_OUTPUT"
+        echo "build-output-dir=$./ggwave/build" >> "$GITHUB_OUTPUT"
         echo "CMAKE_POLICY_VERSION_MINIMUM=3.5" >> $GITHUB_ENV
       
     - name: Configure CMake
@@ -63,6 +63,10 @@ jobs:
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: ctest --build-config ${{ matrix.build_type }}
 
+    - name: find artifacts
+      shell: bash
+      run: find -name '*.so'
+    
     - name: Upload native build artifacts
       uses: actions/upload-artifact@v4
       with:
