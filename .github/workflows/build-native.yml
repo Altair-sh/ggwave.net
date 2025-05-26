@@ -46,14 +46,14 @@ jobs:
     - name: Configure CMake
       run: >
         cmake
-          -S ${{ steps.strings.outputs.cmake-source-dir  }}
-          -B ${{ steps.strings.outputs.build-output-dir }}
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-          -DGGWAVE_BUILD_EXAMPLES=OFF
-          -DBUILD_SHARED_LIBS=ON
-          -DGGWAVE_BUILD_TESTS=ON
+        -S ${{ steps.strings.outputs.cmake-source-dir  }}
+        -B ${{ steps.strings.outputs.build-output-dir }}
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -DGGWAVE_BUILD_EXAMPLES=OFF
+        -DBUILD_SHARED_LIBS=ON
+        -DGGWAVE_BUILD_TESTS=ON
 
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
