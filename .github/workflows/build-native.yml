@@ -91,7 +91,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         # name: natives-${{ steps.vars.outputs.git-submodule-sha }}-${{ runner.os }}
-        ame: natives-${{ runner.os }}
+        name: natives-${{ runner.os }}
         path: |
           ${{ steps.vars.outputs.build-bin-dir }}/*.so
           ${{ steps.vars.outputs.build-bin-dir }}/*.dll
