@@ -60,11 +60,15 @@ jobs:
           SUBMODULE_SHA: $${{ needs.detect-submodule-change.outputs.submodule_sha }}
         run: |
           ARTIFACTS=$(gh api repos/${{ github.repository }}/actions/artifacts)
-          EXISTS=false
+          EXISTS=true
           for OS_NAME in Linux Windows; do
             ARTIFACT_NAME="natives-${SUBMODULE_SHA}-${OS_NAME}"
+            
             if echo "$ARTIFACTS" | jq -e ".artifacts[] | select(.name == \"$ARTIFACT_NAME\")" > /dev/null; then
-              echo "exists=true" >> $GITHUB_OUTPUT
+              echo "artifact $ARTIFACT_NAME exists"
+            else
+              echo "artifact $ARTIFACT_NAME doesn't exist"
+              EXISTS=false
             fi
           done
           echo "RESULT: exists=$EXISTS"
