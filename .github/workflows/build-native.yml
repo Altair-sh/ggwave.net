@@ -39,7 +39,6 @@ jobs:
       id: vars
       shell: bash
       run: |
-      
         echo "git-submodule-sha=$(git submodule status ggwave | awk '{print $1}')" >> "$GITHUB_OUTPUT"
         echo "cmake-source-dir=${{ github.workspace }}/ggwave" >> "$GITHUB_OUTPUT"
         echo "build-working-dir=${{ github.workspace }}/ggwave/build" >> "$GITHUB_OUTPUT"
@@ -48,6 +47,7 @@ jobs:
      
     - name: Set OS-specific variables
       id: os-vars
+      shell: bash
       run: |
         if [[ "${{ matrix.os }}" =~ ^windows- ]]; then
           echo "cmake_os_specific=-DCMAKE_SHARED_LINKER_FLAGS='-static'" >> $GITHUB_OUTPUT
