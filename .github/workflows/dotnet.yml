@@ -1,0 +1,46 @@
+name: Build .NET solution
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout current commit
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+        submodules: false
+        
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+        
+    - name: Download native libraries
+      uses: actions/download-artifact@v4.3.0
+      with:
+        pattern: natives-*
+        path: src/ggwave.net/runtimes/
+        # put all artifact files in runtimes/
+        merge-multiple: true
+        github-token:  ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Native libraries list
+      run: tree src/ggwave.net/runtimes/
+      
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet pack src/ggwave.net/ggwave.net.csproj -o nuget -c Release
+      
+    - name: Upload .net build artifacts
+      if: contains(github.ref, 'release') || github.ref == 'refs/heads/main'
+      uses: actions/upload-artifact@v4
+      with:
+        name: nupkg
+        path: nuget/*
+    
