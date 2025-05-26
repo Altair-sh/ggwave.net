@@ -23,6 +23,7 @@ jobs:
       uses: dawidd6/action-download-artifact@v9
       with:
         name: natives-.*
+        name_is_regexp: true
         path: src/ggwave.net/runtimes/
         # put all artifact files in runtimes/
         merge_multiple: true
