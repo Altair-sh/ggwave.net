@@ -93,6 +93,6 @@ jobs:
         # name: natives-${{ steps.vars.outputs.git-submodule-sha }}-${{ runner.os }}
         name: natives-${{ runner.os }}
         path: |
-          ${{ steps.vars.outputs.build-bin-dir../.. }}/**/*.so
-          ${{ steps.vars.outputs.build-bin-dir../.. }}/**/*.dll
-          ${{ steps.vars.outputs.build-bin-dir../.. }}/**/*.dylib
+          ${{ steps.vars.outputs.build-working-dir }}/bin/**/*.dll
+          ${{ steps.vars.outputs.build-working-dir }}/bin/**/*.so
+          ${{ steps.vars.outputs.build-working-dir }}/bin/**/*.dylib
