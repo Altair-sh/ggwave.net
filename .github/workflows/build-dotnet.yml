@@ -31,7 +31,8 @@ jobs:
         path: src/ggwave.net/runtimes/
         # put all artifact files in runtimes/
         merge_multiple: true
-        branch: ${{ github.head_ref || github.ref_name }} 
+        branch: ${{ github.head_ref || github.ref_name }}
+        workflow_search: true
         github_token:  ${{ secrets.GITHUB_TOKEN }}
         
     - name: Native libraries list
