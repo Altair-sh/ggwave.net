@@ -47,7 +47,7 @@ jobs:
     - name: Configure CMake
       run: >
         cmake
-        -S 
+        -S ${{ steps.strings.outputs.cmake-source-dir }}
         -B ${{ steps.strings.outputs.build-working-dir }}
         -G "Ninja"
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
