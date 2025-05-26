@@ -27,13 +27,12 @@ jobs:
     - name: Download native libraries
       uses: dawidd6/action-download-artifact@v9
       with:
-        # search_artifacts: # optional
-        name_is_regexp: natives-*
+        name: natives-*
         path: src/ggwave.net/runtimes/
         # put all artifact files in runtimes/
-        merge-multiple: true
+        merge_multiple: true
         branch: ${{ github.head_ref || github.ref_name }} 
-        github-token:  ${{ secrets.GITHUB_TOKEN }}
+        github_token:  ${{ secrets.GITHUB_TOKEN }}
         
     - name: Native libraries list
       run: tree src/ggwave.net/runtimes/
