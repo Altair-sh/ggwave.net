@@ -41,7 +41,7 @@ jobs:
         dotnet-version: 8.0.x
       
     - name: Restore dependencies
-      run: dotnet restore src/ggwave.net/ggwave.net.sln
+      run: dotnet restore src/ggwave.net.sln
     - name: Build
       run: dotnet pack src/ggwave.net/ggwave.net.csproj -o nuget -c Release
       
