@@ -18,7 +18,9 @@ jobs:
         with:
           fetch-depth: 2
           submodules: false
-
+      - name: Configure git
+        run: git config --global advice.detachedHead false
+        
       - name: Get previous commit hash
         id: prev
         run: echo "sha=$(git rev-parse HEAD^)" >> $GITHUB_OUTPUT
@@ -27,21 +29,23 @@ jobs:
         run: |
           git checkout ${{ steps.prev.outputs.sha }}
           git submodule status ggwave > ../old.txt
+          cat ../old.txt
 
       - name: Save new submodule status
         run: |
           git checkout ${{ github.sha }}
           git submodule update --init --recursive --depth 2
           git submodule status ggwave > ../new.txt
+          cat ../new.txt
 
       - name: Compare submodule reference
         id: compare
         run: |
           echo "submodule_sha=$(cat ../new.txt | awk '{print $1}')" >> $GITHUB_OUTPUT
-          if ! diff ../old.txt ../new.txt >/dev/null; then
-            CHANGED=true
-          else
+          if diff ../old.txt ../new.txt; then
             CHANGED=false
+          else
+            CHANGED=true
           fi
           echo "RESULT: changed=$CHANGED"
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
@@ -57,7 +61,7 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SUBMODULE_SHA: $${{ needs.detect-submodule-change.outputs.submodule_sha }}
+          SUBMODULE_SHA: ${{ needs.detect-submodule-change.outputs.submodule_sha }}
         run: |
           ARTIFACTS=$(gh api repos/${{ github.repository }}/actions/artifacts)
           EXISTS=true
