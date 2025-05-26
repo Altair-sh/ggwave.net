@@ -35,8 +35,8 @@ jobs:
     - name: Pull submodules
       run: git submodule update --init --recursive --depth 1
 
-    - name: Set reusable strings
-      id: strings
+    - name: Set variables
+      id: vars
       shell: bash
       run: |
       
@@ -45,12 +45,21 @@ jobs:
         echo "build-working-dir=${{ github.workspace }}/ggwave/build" >> "$GITHUB_OUTPUT"
         echo "build-bin-dir=${{ github.workspace }}/ggwave/build/bin" >> "$GITHUB_OUTPUT"
         echo "CMAKE_POLICY_VERSION_MINIMUM=3.5" >> $GITHUB_ENV
+     
+    - name: Set OS-specific variables
+      id: os-vars
+      run: |
+        if [[ "${{ matrix.os }}" =~ ^windows- ]]; then
+          echo "cmake_os_specific=-DCMAKE_SHARED_LINKER_FLAGS='-static'" >> $GITHUB_OUTPUT
+        else
+          echo "cmake_os_specific=" >> $GITHUB_OUTPUT
+        fi
       
     - name: Configure CMake
       run: >
         cmake
-        -S ${{ steps.strings.outputs.cmake-source-dir }}
-        -B ${{ steps.strings.outputs.build-working-dir }}
+        -S ${{ steps.vars.outputs.cmake-source-dir }}
+        -B ${{ steps.vars.outputs.build-working-dir }}
         -G "Ninja"
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
@@ -58,16 +67,17 @@ jobs:
         -DGGWAVE_BUILD_EXAMPLES=OFF
         -DBUILD_SHARED_LIBS=ON
         -DGGWAVE_BUILD_TESTS=ON
-        -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${{ steps.strings.outputs.build-bin-dir }}
-        -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=${{ steps.strings.outputs.build-bin-dir }}
-        -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=${{ steps.strings.outputs.build-bin-dir }}
+        -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${{ steps.vars.outputs.build-bin-dir }}
+        -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=${{ steps.vars.outputs.build-bin-dir }}
+        -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=${{ steps.vars.outputs.build-bin-dir }}
+        ${{ steps.os-vars.outputs.cmake_os_specific }}
 
     - name: Build
-      working-directory: ${{ steps.strings.outputs.build-working-dir }}
+      working-directory: ${{ steps.vars.outputs.build-working-dir }}
       run: cmake --build . --config ${{ matrix.build_type }}
 
     - name: Test
-      working-directory: ${{ steps.strings.outputs.build-working-dir }}
+      working-directory: ${{ steps.vars.outputs.build-working-dir }}
       run: ctest --build-config ${{ matrix.build_type }}
 
     - name: Find build artifacts
@@ -80,8 +90,8 @@ jobs:
     - name: Upload native build artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: natives-${{ steps.strings.outputs.git-submodule-sha }}-${{ runner.os }}
+        name: natives-${{ steps.vars.outputs.git-submodule-sha }}-${{ runner.os }}
         path: |
-          ${{ steps.strings.outputs.build-bin-dir }}/*.so
-          ${{ steps.strings.outputs.build-bin-dir }}/*.dll
-          ${{ steps.strings.outputs.build-bin-dir }}/*.dylib
+          ${{ steps.vars.outputs.build-bin-dir }}/*.so
+          ${{ steps.vars.outputs.build-bin-dir }}/*.dll
+          ${{ steps.vars.outputs.build-bin-dir }}/*.dylib
