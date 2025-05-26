@@ -39,10 +39,12 @@ jobs:
         run: |
           echo "submodule_sha=$(cat ../new.txt | awk '{print $1}')" >> $GITHUB_OUTPUT
           if ! diff ../old.txt ../new.txt >/dev/null; then
-            echo "changed=true" >> $GITHUB_OUTPUT
+            CHANGED=true
           else
-            echo "changed=false" >> $GITHUB_OUTPUT
+            CHANGED=false
           fi
+          echo "RESULT: changed=$CHANGED"
+          echo "changed=$CHANGED" >> $GITHUB_OUTPUT
 
   check-existing-artifact:
     needs: detect-submodule-change
@@ -65,6 +67,7 @@ jobs:
               echo "exists=true" >> $GITHUB_OUTPUT
             fi
           done
+          echo "RESULT: exists=$EXISTS"
           echo "exists=$EXISTS" >> $GITHUB_OUTPUT
 
   call-build-native:
