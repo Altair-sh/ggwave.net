@@ -6,7 +6,11 @@ on:
   workflow_dispatch:
 
 jobs:
+  call-build-submodule:
+    uses: ./.github/workflows/build-submodule.yml
+
   build:
+    needs: [ call-build-submodule ]
     runs-on: ubuntu-latest
     steps:
     - name: Checkout current commit
@@ -19,8 +23,6 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
-    - name: Build native libraries if needed
-      uses: ./.github/workflows/build-submodule.yml
       
     - name: Download native libraries
       uses: actions/download-artifact@v4.3.0
