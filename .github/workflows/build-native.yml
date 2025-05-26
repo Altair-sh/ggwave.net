@@ -40,7 +40,7 @@ jobs:
       shell: bash
       run: |
         echo "cmake-source-dir=./ggwave" >> "$GITHUB_OUTPUT"
-        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+        echo "build-output-dir=${{ steps.strings.outputs.cmake-source-dir }}/build" >> "$GITHUB_OUTPUT"
         echo "CMAKE_POLICY_VERSION_MINIMUM=3.5" >> $GITHUB_ENV
       
     - name: Configure CMake
@@ -48,6 +48,7 @@ jobs:
         cmake
         -S ${{ steps.strings.outputs.cmake-source-dir  }}
         -B ${{ steps.strings.outputs.build-output-dir }}
+        -G "Ninja"
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
