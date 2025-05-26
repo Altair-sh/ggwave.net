@@ -39,7 +39,6 @@ jobs:
       id: strings
       shell: bash
       run: |
-        echo "sha=$(git rev-parse HEAD^)" >> $GITHUB_OUTPUT
         echo "cmake-source-dir=${{ github.workspace }}/ggwave" >> "$GITHUB_OUTPUT"
         echo "build-working-dir=${{ github.workspace }}/ggwave/build" >> "$GITHUB_OUTPUT"
         echo "build-bin-dir=${{ github.workspace }}/ggwave/build/bin" >> "$GITHUB_OUTPUT"
@@ -79,7 +78,7 @@ jobs:
     - name: Upload native build artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: natives-${{ steps.strings.outputs.sha }}-${{ runner.os }}
+        name: natives-${{ github.sha }}-${{ runner.os }}
         path: |
           ${{ steps.strings.outputs.build-bin-dir }}/*.so
           ${{ steps.strings.outputs.build-bin-dir }}/*.dll
