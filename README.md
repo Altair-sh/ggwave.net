@@ -64,5 +64,5 @@ Copy *.so or *.dll to `src/ggwave.net/runtimes/<platform-dir>/native` where `pla
 
 ### Create nuget package
 ```sh
-dotnet pack src/ggwave.net/ggwave.net.csproj -o nuget
+dotnet pack src/ggwave.net/ggwave.net.csproj -o nuget -c Release
 ```
