@@ -28,20 +28,20 @@ jobs:
       - name: Save old submodule status
         run: |
           git checkout ${{ steps.prev.outputs.sha }}
-          git submodule status ggwave | awk '{print $1 " " $2}' > ../old.txt
+          git submodule status ggwave | awk '{print $1}' | sed 's/[^0-9a-f]//g' > ../old.txt
           cat ../old.txt
 
       - name: Save new submodule status
         run: |
           git checkout ${{ github.sha }}
           git submodule update --init --recursive --depth 2
-          git submodule status ggwave | awk '{print $1 " " $2}' > ../new.txt
+          git submodule status ggwave | awk '{print $1}' | sed 's/[^0-9a-f]//g' > ../new.txt
           cat ../new.txt
 
       - name: Compare submodule reference
         id: compare
         run: |
-          echo "submodule_sha=$(cat ../new.txt | awk '{print $1}')" >> $GITHUB_OUTPUT
+          echo "submodule_sha=$(cat ../new.txt)" >> $GITHUB_OUTPUT
           if diff ../old.txt ../new.txt; then
             CHANGED=false
           else
@@ -66,7 +66,8 @@ jobs:
           ARTIFACTS=$(gh api repos/${{ github.repository }}/actions/artifacts)
           EXISTS=true
           for OS_NAME in Linux Windows; do
-            ARTIFACT_NAME="natives-${SUBMODULE_SHA}-${OS_NAME}"
+            # ARTIFACT_NAME="natives-${SUBMODULE_SHA}-${OS_NAME}"
+            ARTIFACT_NAME="natives-${OS_NAME}"
             
             if echo "$ARTIFACTS" | jq -e ".artifacts[] | select(.name == \"$ARTIFACT_NAME\")" > /dev/null; then
               echo "artifact $ARTIFACT_NAME exists"
