@@ -53,18 +53,18 @@ jobs:
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      
-      run: >
-        CMAKE_POLICY_VERSION_MINIMUM=3.5
-        cmake
-        -S ${{ steps.strings.outputs.cmake-source-dir  }}
-        -B ${{ steps.strings.outputs.build-output-dir }}
-        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-        -DGGWAVE_BUILD_EXAMPLES=OFF
-        -DBUILD_SHARED_LIBS=ON
-        -DGGWAVE_BUILD_TESTS=ON
+
+      run: |
+        export CMAKE_POLICY_VERSION_MINIMUM=3.5
+        cmake \
+          -S ${{ steps.strings.outputs.cmake-source-dir  }}\
+          -B ${{ steps.strings.outputs.build-output-dir }}\
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}\
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}\
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}\
+          -DGGWAVE_BUILD_EXAMPLES=OFF\
+          -DBUILD_SHARED_LIBS=ON\
+          -DGGWAVE_BUILD_TESTS=ON\
 
     - name: Build
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
@@ -75,3 +75,12 @@ jobs:
       # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest --build-config ${{ matrix.build_type }}
+
+    - name: Upload native build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: native-libraries
+        path: |
+          ${{ steps.strings.outputs.build-output-dir }}/bin/**/*.so
+          ${{ steps.strings.outputs.build-output-dir }}/bin/**/*.dll
+          ${{ steps.strings.outputs.build-output-dir }}/bin/**/*.dylib
