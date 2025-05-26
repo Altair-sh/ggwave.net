@@ -16,7 +16,7 @@ jobs:
       - name: Checkout current commit
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 2
           submodules: false
 
       - name: Get previous commit hash
@@ -31,7 +31,7 @@ jobs:
       - name: Save new submodule status
         run: |
           git checkout ${{ github.sha }}
-          git submodule update --init --recursive --depth 1
+          git submodule update --init --recursive --depth 2
           git submodule status libs/my-submodule > ../new.txt
 
       - name: Compare submodule reference
