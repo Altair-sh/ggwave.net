@@ -25,13 +25,35 @@ jobs:
         name: natives-.*
         name_is_regexp: true
         path: src/ggwave.net/runtimes/
-        # put all artifact files in runtimes/
-        merge_multiple: true
+        merge_multiple: false
         branch: ${{ github.head_ref || github.ref_name }}
         workflow_search: true
         check_artifacts: true
         github_token:  ${{ secrets.GITHUB_TOKEN }}
-        
+
+    - name: Rearrange native libraries
+      shell: bash
+      working-directory: src/ggwave.net/runtimes/
+      run: |
+        ARTIFACTS=$(ls)
+        for ARTIFACT in $ARTIFACTS; do
+          case $ARTIFACT in
+            natives-Windows)
+              PLATFORM=win
+              ;;
+            natives-Linux)
+              PLATFORM=linux
+              ;;
+            *)
+              echo "ERROR: unexpected artifact name '$ARTIFACT'"
+              exit 1
+              ;;
+          esac
+          for ARCH in $(ls $ARTIFACT)
+            mv -v "$ARTIFACT/$ARCH" "$PLATFORM-$ARCH"
+          done
+        done
+    
     - name: Native libraries list
       run: tree src/ggwave.net/runtimes/
       
