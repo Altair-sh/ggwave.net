@@ -1,0 +1,37 @@
+# Push packages to NuGet
+name: push-nuget
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: [ build-nupkg ]
+    branches:
+      - main
+    types:
+      - completed
+
+jobs:
+  push-nuget:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout (required for some setups)
+        uses: actions/checkout@v4
+
+      - name: Download nupkg artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: nupkg
+          path: ./artifacts
+
+      - name: Show contents
+        run: ls -l ./artifacts
+
+      - name: Push packages to nuget.org
+        run: |
+            dotnet nuget push ./artifacts/*.nupkg \
+              --api-key ${{ secrets.NUGET_API_KEY }} \
+              --source https://api.nuget.org/v3/index.json \
+              --skip-duplicate
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
