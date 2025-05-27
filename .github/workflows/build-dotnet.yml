@@ -27,6 +27,8 @@ jobs:
         echo "runtimes-dir=${{ github.workspace }}/src/ggwave.net/runtimes" >> "$GITHUB_OUTPUT"
     
     - name: Download native libraries
+      env:
+        ACTIONS_STEP_DEBUG: true
       uses: dawidd6/action-download-artifact@v9
       with:
         name: natives-all-${{ steps.vars.outputs.git-submodule-sha }}
@@ -34,6 +36,7 @@ jobs:
         path: ${{ steps.vars.outputs.runtimes-dir }}
         merge_multiple: false
         branch: ${{ github.head_ref || github.ref_name }}
+        workflow_conclusion: ""
         workflow_search: true
         check_artifacts: true
         github_token:  ${{ secrets.GITHUB_TOKEN }}
