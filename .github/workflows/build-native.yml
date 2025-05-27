@@ -1,5 +1,3 @@
-# This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
-# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
 name: build-native
 
 on:
@@ -8,23 +6,7 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      # set to true to stop all jobs if any of them fails
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-2019]
-        build_type: [Release]
-        c_compiler: [gcc]
-        include:
-          - os: windows-2019
-            c_compiler: gcc
-            cpp_compiler: g++
-          - os: ubuntu-latest
-            c_compiler: gcc
-            cpp_compiler: g++
-        # TODO: add osx
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout current commit
@@ -40,59 +22,18 @@ jobs:
       shell: bash
       run: |
         echo "git-submodule-sha=$(git submodule status ggwave | awk '{print $1}')" >> "$GITHUB_OUTPUT"
-        echo "cmake-source-dir=${{ github.workspace }}/ggwave" >> "$GITHUB_OUTPUT"
-        echo "build-working-dir=${{ github.workspace }}/ggwave/build" >> "$GITHUB_OUTPUT"
-        echo "build-bin-dir=${{ github.workspace }}/ggwave/build/bin/x64/native" >> "$GITHUB_OUTPUT"
-        echo "CMAKE_POLICY_VERSION_MINIMUM=3.5" >> $GITHUB_ENV
+        echo "runtimes-dir=${{ github.workspace }}/src/ggwave.net/runtimes" >> "$GITHUB_OUTPUT"
      
-    - name: Set OS-specific variables
-      id: os-vars
-      shell: bash
-      run: |
-        if [[ "${{ matrix.os }}" =~ ^windows- ]]; then
-          echo "cmake_os_specific=-DCMAKE_SHARED_LINKER_FLAGS='-static'" >> $GITHUB_OUTPUT
-        else
-          echo "cmake_os_specific=" >> $GITHUB_OUTPUT
-        fi
-      
-    - name: Configure CMake
-      run: >
-        cmake
-        -S ${{ steps.vars.outputs.cmake-source-dir }}
-        -B ${{ steps.vars.outputs.build-working-dir }}
-        -G "Ninja"
-        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-        -DGGWAVE_BUILD_EXAMPLES=OFF
-        -DBUILD_SHARED_LIBS=ON
-        -DGGWAVE_BUILD_TESTS=ON
-        -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${{ steps.vars.outputs.build-bin-dir }}
-        -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=${{ steps.vars.outputs.build-bin-dir }}
-        -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=${{ steps.vars.outputs.build-bin-dir }}
-        ${{ steps.os-vars.outputs.cmake_os_specific }}
-
     - name: Build
-      working-directory: ${{ steps.vars.outputs.build-working-dir }}
-      run: cmake --build . --config ${{ matrix.build_type }}
+      run: make linux linux-cross-windows
 
-    - name: Test
-      working-directory: ${{ steps.vars.outputs.build-working-dir }}
-      run: ctest --build-config ${{ matrix.build_type }}
-
-    - name: Find build artifacts
-      shell: bash
-      run: |
-        find -name '*.so'
-        find -name '*.dll'
-        find -name '*.dylib'
+    - name: Show build results
+      run: tree ${{ steps.vars.outputs.runtimes-dir }}
     
     - name: Upload native build artifacts
       uses: actions/upload-artifact@v4
       with:
-        # name: natives-${{ steps.vars.outputs.git-submodule-sha }}-${{ runner.os }}
-        name: natives-${{ runner.os }}
+        name: natives-all-${{ steps.vars.outputs.git-submodule-sha }}
+        replace: true
         path: |
-          ${{ steps.vars.outputs.build-working-dir }}/bin/**/*.dll
-          ${{ steps.vars.outputs.build-working-dir }}/bin/**/*.so
-          ${{ steps.vars.outputs.build-working-dir }}/bin/**/*.dylib
+          ${{ steps.vars.outputs.runtimes-dir }}

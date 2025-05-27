@@ -64,17 +64,16 @@ jobs:
         run: |
           ARTIFACTS=$(gh api repos/${{ github.repository }}/actions/artifacts?branch=${BRANCH_NAME}&filter=completed)
           EXISTS=true
-          for OS_NAME in Linux Windows; do
-            # ARTIFACT_NAME="natives-${SUBMODULE_SHA}-${OS_NAME}"
-            ARTIFACT_NAME="natives-${OS_NAME}"
-            
-            if echo "$ARTIFACTS" | jq -e ".artifacts[] | select(.name == \"$ARTIFACT_NAME\")" > /dev/null; then
-              echo "artifact $ARTIFACT_NAME exists"
-            else
-              echo "artifact $ARTIFACT_NAME doesn't exist"
-              EXISTS=false
-            fi
-          done
+
+          ARTIFACT_NAME="natives-all-${SUBMODULE_SHA}"
+          
+          if echo "$ARTIFACTS" | jq -e ".artifacts[] | select(.name == \"$ARTIFACT_NAME\")" > /dev/null; then
+            echo "artifact $ARTIFACT_NAME exists"
+          else
+            echo "artifact $ARTIFACT_NAME doesn't exist"
+            EXISTS=false
+          fi
+
           echo "RESULT: exists=$EXISTS"
           echo "exists=$EXISTS" >> $GITHUB_OUTPUT
 
