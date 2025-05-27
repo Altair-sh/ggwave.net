@@ -28,7 +28,7 @@ jobs:
       id: vars
       shell: bash
       run: |
-        echo "git-submodule-sha=$(git submodule status ggwave | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+        echo "git-submodule-sha=$(git submodule status ggwave | awk '{print $1}' | sed 's/[^0-9a-f]//g')" >> "$GITHUB_OUTPUT"
         echo "runtimes-dir=${{ github.workspace }}/src/ggwave.net/runtimes" >> "$GITHUB_OUTPUT"
      
     - name: Build
