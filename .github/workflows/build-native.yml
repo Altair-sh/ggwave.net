@@ -32,7 +32,7 @@ jobs:
         echo "runtimes-dir=${{ github.workspace }}/src/ggwave.net/runtimes" >> "$GITHUB_OUTPUT"
      
     - name: Build
-      run: make linux linux-cross-windows
+      run: make linux linux-cross-win
 
     - name: Show build results
       run: tree ${{ steps.vars.outputs.runtimes-dir }}
@@ -41,6 +41,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: natives-all-${{ steps.vars.outputs.git-submodule-sha }}
-        replace: true
         path: |
           ${{ steps.vars.outputs.runtimes-dir }}
