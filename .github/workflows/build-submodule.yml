@@ -6,66 +6,28 @@ on:
   workflow_call:
 
 jobs:
-  detect-submodule-change:
-    runs-on: ubuntu-latest
-    outputs:
-      submodule_changed: ${{ steps.compare.outputs.changed }}
-      submodule_sha: ${{ steps.compare.outputs.submodule_sha }}
-    steps:
-      - name: Checkout current commit
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-          submodules: false
-      - name: Configure git
-        run: git config --global advice.detachedHead false
-        
-      - name: Get previous commit hash
-        id: prev
-        run: echo "sha=$(git rev-parse HEAD^)" >> $GITHUB_OUTPUT
-
-      - name: Save old submodule status
-        run: |
-          git checkout ${{ steps.prev.outputs.sha }}
-          git submodule status ggwave | awk '{print $1}' | sed 's/[^0-9a-f]//g' > ../old.txt
-          cat ../old.txt
-
-      - name: Save new submodule status
-        run: |
-          git checkout ${{ github.sha }}
-          git submodule update --init --recursive --depth 2
-          git submodule status ggwave | awk '{print $1}' | sed 's/[^0-9a-f]//g' > ../new.txt
-          cat ../new.txt
-
-      - name: Compare submodule reference
-        id: compare
-        run: |
-          echo "submodule_sha=$(cat ../new.txt)" >> $GITHUB_OUTPUT
-          if diff ../old.txt ../new.txt; then
-            CHANGED=false
-          else
-            CHANGED=true
-          fi
-          echo "RESULT: changed=$CHANGED"
-          echo "changed=$CHANGED" >> $GITHUB_OUTPUT
-
   check-existing-artifact:
-    needs: detect-submodule-change
     runs-on: ubuntu-latest
     outputs:
       artifact_exists: ${{ steps.check.outputs.exists }}
 
     steps:
+      - name: Checkout current commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          submodules: false
+      
       - name: Check for existing artifact
         id: check
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
-          SUBMODULE_SHA: ${{ needs.detect-submodule-change.outputs.submodule_sha }}
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
         run: |
           ARTIFACTS=$(gh api repos/${{ github.repository }}/actions/artifacts?branch=${BRANCH_NAME}&filter=completed)
           EXISTS=true
 
+          SUBMODULE_SHA=$(git submodule status ggwave | awk '{print $1}' | sed 's/[^0-9a-f]//g')
           ARTIFACT_NAME="natives-all-${SUBMODULE_SHA}"
           
           if echo "$ARTIFACTS" | jq -e ".artifacts[] | select(.name == \"$ARTIFACT_NAME\")" > /dev/null; then
@@ -79,8 +41,6 @@ jobs:
           echo "exists=$EXISTS" >> $GITHUB_OUTPUT
 
   call-build-native:
-    needs: [detect-submodule-change, check-existing-artifact]
-    if: |
-      needs.detect-submodule-change.outputs.submodule_changed == 'true' ||
-      needs.check-existing-artifact.outputs.artifact_exists == 'false'
+    needs: [check-existing-artifact]
+    if: needs.check-existing-artifact.outputs.artifact_exists == 'false'
     uses: ./.github/workflows/build-native.yml

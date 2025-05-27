@@ -13,16 +13,15 @@ on:
 jobs:
   push-nuget:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout (required for some setups)
-        uses: actions/checkout@v4
-
       - name: Download nupkg artifact
-        uses: actions/download-artifact@v4
+        uses: dawidd6/action-download-artifact@v9
         with:
           name: nupkg
           path: ./artifacts
+          branch: main
+          search_artifacts: true
+          workflow_search: true
 
       - name: Show contents
         run: ls -l ./artifacts
