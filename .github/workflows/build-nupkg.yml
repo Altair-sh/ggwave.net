@@ -8,9 +8,9 @@ on:
 
 jobs:
   call-build-submodule:
-    uses: ./.github/workflows/build-submodule.yml
+    uses: ./.github/workflows/build-native.yml
 
-  build:
+  build-nupkg:
     needs: [ call-build-submodule ]
     runs-on: ubuntu-latest
     steps:
