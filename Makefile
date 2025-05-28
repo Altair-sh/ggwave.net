@@ -49,9 +49,9 @@ linux-x64:
 	@bash ./find-and-copy.sh \
 		$(BUILD_DIR)-linux-x64 \
 		libggwave.so \
-		$(RUNTIMES_DIR)/linux-x64/natives
+		$(RUNTIMES_DIR)/linux-x64/native
 	@echo "libggwave dependencies:"
-	@objdump -p src/ggwave.net/runtimes/linux-x64/natives/libggwave.so | grep 'NEEDED'
+	@objdump -p src/ggwave.net/runtimes/linux-x64/native/libggwave.so | grep 'NEEDED'
 
 linux-arm64:
 	@echo "=================================[linux-arm64]================================="
@@ -65,9 +65,9 @@ linux-arm64:
 	@bash ./find-and-copy.sh \
 		$(BUILD_DIR)-linux-arm64 \
 		libggwave.so \
-		$(RUNTIMES_DIR)/linux-arm64/natives
+		$(RUNTIMES_DIR)/linux-arm64/native
 	@echo "libggwave dependencies:"
-	@aarch64-linux-gnu-objdump -p src/ggwave.net/runtimes/linux-arm64/natives/libggwave.so | grep 'NEEDED'
+	@aarch64-linux-gnu-objdump -p src/ggwave.net/runtimes/linux-arm64/native/libggwave.so | grep 'NEEDED'
 
 linux-cross-win: linux-cross-win-x64
 
@@ -83,9 +83,9 @@ linux-cross-win-x64:
 	@bash ./find-and-copy.sh \
 		$(BUILD_DIR)-linux-cross-win-x64 \
 		libggwave.dll \
-		$(RUNTIMES_DIR)/win-x64/natives
+		$(RUNTIMES_DIR)/win-x64/native
 	@echo "libggwave dependencies:"
-	@x86_64-w64-mingw32-objdump -p src/ggwave.net/runtimes/win-x64/natives/libggwave.dll | grep 'DLL Name'
+	@x86_64-w64-mingw32-objdump -p src/ggwave.net/runtimes/win-x64/native/libggwave.dll | grep 'DLL Name'
 
 win: win-x64
 
@@ -102,9 +102,9 @@ win-x64:
 	@bash ./find-and-copy.sh \
 		$(BUILD_DIR)-win-x64 \
 		libggwave.dll \
-		$(RUNTIMES_DIR)/win-x64/natives
+		$(RUNTIMES_DIR)/win-x64/native
 	@echo "libggwave dependencies:"
-	@objdump -p src/ggwave.net/runtimes/win-x64/natives/libggwave.dll | grep 'DLL Name'
+	@objdump -p src/ggwave.net/runtimes/win-x64/native/libggwave.dll | grep 'DLL Name'
 
 win-arm64:
 	@echo "==================================[win-arm64]=================================="
@@ -119,6 +119,6 @@ win-arm64:
 	@bash ./find-and-copy.sh \
 		$(BUILD_DIR)-win-arm64 \
 		libggwave.dll \
-		$(RUNTIMES_DIR)/win-arm64/natives
+		$(RUNTIMES_DIR)/win-arm64/native
 	@echo "libggwave dependencies:"
-	@aarch64-w64-mingw32-objdump -p src/ggwave.net/runtimes/win-arm64/natives/libggwave.dll | grep 'DLL Name'
+	@aarch64-w64-mingw32-objdump -p src/ggwave.net/runtimes/win-arm64/native/libggwave.dll | grep 'DLL Name'

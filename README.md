@@ -61,5 +61,5 @@ Built libraries are copied to `src/ggwave.net/runtimes/` automatically
 
 ### Create nuget package
 ```sh
-dotnet pack src/ggwave.net/ggwave.net.csproj -o nuget -c Release
+dotnet pack src/ggwave.net/ggwave.net.csproj -o nuget
 ```

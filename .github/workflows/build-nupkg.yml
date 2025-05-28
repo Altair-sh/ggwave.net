@@ -47,10 +47,8 @@ jobs:
       with:
         dotnet-version: 8.0.x
       
-    - name: Restore dependencies
-      run: dotnet restore src/ggwave.net.sln
     - name: Build
-      run: dotnet pack src/ggwave.net/ggwave.net.csproj -o nuget -c Release
+      run: dotnet pack src/ggwave.net/ggwave.net.csproj -o nuget
       
     - name: Upload nuget packages artifact
       uses: actions/upload-artifact@v4

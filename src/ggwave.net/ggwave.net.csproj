@@ -1,17 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>0.1.1</Version>
+    <Version>0.1.2</Version>
+    <Description>C# bindings for [ggwave](https://github.com/ggerganov/ggwave) data-over-sound library.</Description>
+    <Authors>Altair-sh</Authors>
+    <PackageTags>ggwave;audio;encoding;decoding</PackageTags>
+    <PackageProjectUrl>https://github.com/Altair-sh/ggwave.net</PackageProjectUrl>
+    
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <ConfigurationPlatforms>x64</ConfigurationPlatforms>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   
   <ItemGroup>
-    <None Include="runtimes\**\*" Pack="true" PackagePath="runtimes\"/>
+    <Content Include="runtimes\**\*" Pack="true" PackagePath="runtimes\" CopyToOutputDirectory="PreserveNewest"/>
   </ItemGroup>
   
   <ItemGroup>
