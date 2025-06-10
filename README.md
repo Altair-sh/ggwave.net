@@ -1,6 +1,15 @@
 # ggwave.net
+[![NuGet Version](https://img.shields.io/nuget/v/ggwave.net)](https://www.nuget.org/packages/ggwave.net)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/ggwave.net)](https://www.nuget.org/stats/packages/ggwave.net)
+
 C# bindings for [ggwave](https://github.com/ggerganov/ggwave) data-over-sound library.
 
+## Usage
+Install the package
+```sh
+dotnet add package ggwave.net
+```
+Code example: [ggwave.net.cli](./src/ggwave.net.cli)
 
 ## Building
 ### Clone repository 
