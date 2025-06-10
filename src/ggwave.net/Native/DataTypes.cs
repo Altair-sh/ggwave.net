@@ -3,8 +3,8 @@ using System.Runtime.InteropServices;
 
 namespace ggwave.net.Native;
 
-//TODO: find out should it be changed
-//#define GGWAVE_MAX_INSTANCES 4
+// TODO: find out should it be changed
+// #define GGWAVE_MAX_INSTANCES 4
 
 // Data format of the audio samples
 public enum GGWaveSampleFormat
