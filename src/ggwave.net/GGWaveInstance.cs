@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Buffers;
 using System.IO;
+using System.Threading;
 using ggwave.net.Native;
 using static ggwave.net.Native.Functions;
 
@@ -114,17 +115,39 @@ public class GGWaveInstance : IDisposable
     }
 
 
+    /// <summary>
+    /// Converts binary data into wave data
+    /// </summary>
+    /// <param name="input">readable stream</param>
+    /// <param name="output">writeable stream</param>
+    /// <param name="protocolId"><see cref="GGWaveProtocolId"/></param>
+    /// <param name="volumePercent">loudness of audio in percents</param>
+    /// <param name="waitForMoreInput">whether to wait for more data written to input stream when stream end is reached</param>
+    /// <param name="ct">a way to stop reading input stream</param>
+    /// <param name="inputBufferSize">size of buffer read from input stream</param>
     public unsafe void EncodeStream(Stream input, Stream output,
-        GGWaveProtocolId protocolId, int volumePercent, int inputBufferSize = 8192)
+        GGWaveProtocolId protocolId, int volumePercent,
+        bool waitForMoreInput = false, CancellationToken ct = default,
+        int inputBufferSize = 8192)
     {
         byte[] inputBuffer = ArrayPool<byte>.Shared.Rent(inputBufferSize);
         try
         {
             fixed (byte* pPayload = inputBuffer)
             {
-                int readN;
-                while ((readN = input.Read(inputBuffer, 0, inputBufferSize)) != 0)
+                while (!ct.IsCancellationRequested)
                 {
+                    int readN = input.Read(inputBuffer, 0, inputBufferSize);
+                    // end of stream is reached
+                    if (readN == 0)
+                    {
+                        if (!waitForMoreInput)
+                            break;
+                        
+                        Thread.Sleep(20);
+                        continue;
+                    }
+                    
                     int outputBufferSize = CalculateEncodedSize((IntPtr)pPayload, readN,
                         protocolId, volumePercent);
                     byte[] outputBuffer = ArrayPool<byte>.Shared.Rent(outputBufferSize);
@@ -151,7 +174,17 @@ public class GGWaveInstance : IDisposable
         }
     }
 
-    public unsafe void DecodeStream(Stream input, Stream output, int inputBufferSize = 8192)
+    /// <summary>
+    /// Converts wave-encoded data back into binary data
+    /// </summary>
+    /// <param name="input">readable stream</param>
+    /// <param name="output">writeable stream</param>
+    /// <param name="waitForMoreInput">whether to wait for more data written to input stream when stream end is reached</param>
+    /// <param name="ct">a way to stop reading input stream</param>
+    /// <param name="inputBufferSize">size of buffer read from input stream</param>
+    public unsafe void DecodeStream(Stream input, Stream output,
+        bool waitForMoreInput = false, CancellationToken ct = default,
+        int inputBufferSize = 8192)
     {
         byte[] inputBuffer = ArrayPool<byte>.Shared.Rent(inputBufferSize);
         byte[] outputBuffer = ArrayPool<byte>.Shared.Rent(inputBufferSize);
@@ -161,9 +194,19 @@ public class GGWaveInstance : IDisposable
             {
                 fixed (byte* pPayload = outputBuffer)
                 {
-                    int readN;
-                    while ((readN = input.Read(inputBuffer, 0, inputBufferSize)) != 0)
+                    while (!ct.IsCancellationRequested)
                     {
+                        int readN = input.Read(inputBuffer, 0, inputBufferSize);
+                        // end of stream is reached
+                        if (readN == 0)
+                        {
+                            if (!waitForMoreInput)
+                                break;
+                        
+                            Thread.Sleep(20);
+                            continue;
+                        }
+                        
                         int decN = DecodePtr((IntPtr)pWaveform, readN,
                             (IntPtr)pPayload, outputBuffer.Length);
                         output.Write(outputBuffer, 0, decN);
